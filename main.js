@@ -24,8 +24,7 @@ parse_textarea();
 function clear_objects() {
     console.log("Clearing objects");
     
-    for(let object of objects) {
-        let cubeMesh = object['item'];
+    for(let cubeMesh of objects) {
         scene.remove(cubeMesh);
         cubeMesh.geometry.dispose();
         cubeMesh.material.dispose();
@@ -45,7 +44,7 @@ function setup() {
     camera.position.set( 0, 80, 400 );
     controls.update();
 
-    
+
     scene.background = new THREE.Color().setHSL( 0.6, 0, 1 );
     scene.fog = new THREE.Fog( scene.background, 1, 5000 );
     
@@ -174,20 +173,24 @@ function add_crate() {
 
 
 
-function addCube(w,d,h, x,y,z, surface='clay_a.jpg', add=true) {
+function addCube(w,d,h, x,y,z, surface='clay_a.jpg', add=true, geometry=null, material=null) {
     // const [w,d,h, x,y,z, surface] = cubedata;
-    var geo = new THREE.BoxGeometry( w,d,h );
+    var geo = geometry ? geometry : new THREE.BoxGeometry( w,d,h );
     // var mat = new THREE.MeshBasicMaterial( { color: color } );
     // var mat = new THREE.MeshBasicMaterial( { map: texture });
 
-    var mat = null;
+    var mat = material ? material : null;
     // console.log("Surface texture:",surface,typeof(surface)==String);
-    if(isString(surface)) {
-        const texture = new THREE.TextureLoader().load(`textures/${surface}`)
-        mat = new THREE.MeshBasicMaterial( { map: texture });
+
+    if(mat === null) {
+        if(isString(surface)) {
+            const texture = new THREE.TextureLoader().load(`textures/${surface}`)
+            mat = new THREE.MeshBasicMaterial( { map: texture });
+        }
+        else
+            mat = new THREE.MeshBasicMaterial( { color: surface } );
     }
-    else
-        var mat = new THREE.MeshBasicMaterial( { color: surface } );
+
 
     var item = new THREE.Mesh( geo, mat );
     scene.add( item );
@@ -197,11 +200,25 @@ function addCube(w,d,h, x,y,z, surface='clay_a.jpg', add=true) {
     item.position.z = h/2 + z;
 
     if(add) {
-        objects.push({
-            geo: geo,
-            mat: mat,
-            item: item,
-        });
+        objects.push(item);
+        console.log("Item added at",w,d,h,x,y,z);
+    }
+}
+
+
+
+function addCubeMesh(w,d,h, x,y,z, geometry, material, add=true) {
+    // const [w,d,h, x,y,z, surface] = cubedata;
+
+    var item = new THREE.Mesh( geometry, material );
+    scene.add( item );
+
+    item.position.x = -(w/2 + x);
+    item.position.y = -(d/2 + y);
+    item.position.z = h/2 + z;
+
+    if(add) {
+        objects.push(item);
         console.log("Item added at",w,d,h,x,y,z);
     }
 }
@@ -255,6 +272,50 @@ function update() {
     parse_textarea();
 }
 
+
+
+
+
+function update_total_spots(w,d,h, x,y,z, margin=1) {
+
+    let total_spots = {};
+
+    for(const rotation of ['r1','r2','r3','r4','r5','r6']) {
+        console.log("Rotation:",rotation);
+        var [w2,d2,h2] = [w,d,h];
+
+        if(rotation == 'r2')
+            [w2,d2,h2] = [d,w,h];
+        else if(rotation == 'r3')
+            [w2,d2,h2] = [w,h,d];
+        else if(rotation == 'r4')
+            [w2,d2,h2] = [h,w,d];
+        else if(rotation == 'r5')
+            [w2,d2,h2] = [h,d,w];
+        else if(rotation == 'r6')
+            [w2,d2,h2] = [d,h,w];
+        
+        const cols = Math.floor(x/(w2+margin));
+        const rows = Math.floor(y/(d2+margin));
+        const lays = Math.floor(z/(h2+margin));
+        console.log(rotation,cols,rows,lays);
+        total_spots[rotation] = cols*rows*lays;
+    }
+
+    const text_rows = [];
+    for (const [key, value] of Object.entries(total_spots)) {
+        text_rows.push(`${key}: ${value} pcs`);
+    }
+
+    document.querySelector("#total-spots").innerText = text_rows.join('\n');
+
+    return total_spots;
+}
+
+
+
+
+
 /* Format:
 30 50x20x30 r1
 */
@@ -268,6 +329,14 @@ function parse_textarea() {
     const [number,size,rotation] = text.split(' ');
     let [w,d,h] = size.split('x').map(s => parseInt(s));
     console.log(number,w,d,h,rotation);
+
+    const max_x = 116;
+    const max_y = 76;
+    const max_z = 80;
+
+    const margin = Math.abs(parseFloat(document.querySelector("#object-margin").value));
+
+    console.log(update_total_spots(w,d,h,max_x,max_y,max_z, margin));
 
     const [x,y,z] = [3,3,3];
 
@@ -289,12 +358,6 @@ function parse_textarea() {
     console.log("Depth: ",d);
     console.log("Height:",h);
 
-    const max_x = 116;
-    const max_y = 76;
-    const max_z = 80;
-
-    const margin = Math.abs(parseFloat(document.querySelector("#object-margin").value));
-
     const cols = Math.floor(max_x/(w+margin));
     const rows = Math.floor(max_y/(d+margin));
     const lays = Math.floor(max_z/(h+margin));
@@ -310,6 +373,11 @@ function parse_textarea() {
 
     const [start_x, start_y, start_z] = [1.5,1.5,1.5];
 
+    
+    const geometry = new THREE.BoxGeometry( w,d,h );
+    const texture = new THREE.TextureLoader().load('textures/clay_a.jpg');
+    console.log(texture);
+    const material = new THREE.MeshBasicMaterial( { map: texture });
 
     for(var i=0; i<number; i++) {
         // const pcs_on_layer = number % layer*pcs_per_layer;
@@ -328,10 +396,11 @@ function parse_textarea() {
         const offset_z = layer * (h+margin);
         const offset_x = col * (w+margin);
         const offset_y = row * (d+margin);
-        addCube(w,d,h,
+        addCubeMesh(w,d,h,
             offset_x+start_x,
             offset_y+start_y,
-            offset_z+start_z);
+            offset_z+start_z,
+            geometry, material);
     }
 
 
