@@ -18,6 +18,7 @@ const new_cubes = [
 
 setup();
 add_crate();
+parse_textarea();
 
 
 function clear_objects() {
@@ -164,7 +165,7 @@ let update_timeout;
 
 function scheduleUpdate() {
     window.clearTimeout(update_timeout);
-    update_timeout = window.setTimeout(update,1000);
+    update_timeout = window.setTimeout(update,500);
     console.log("Update scheduled");
 }
 
@@ -200,13 +201,68 @@ function parse_textarea() {
             break;
     }
 
-    const max_x = 76;
+    console.log("Width: ",w);
+    console.log("Depth: ",d);
+    console.log("Height:",h);
+
+    const max_x = 116;
+    const max_y = 76;
+    const max_z = 80;
+
+    const cols = Math.floor(max_x/(w+1));
+    const rows = Math.floor(max_y/(d+1));
+    const lays = Math.floor(max_z/(h+1));
+
+    const total_spots = cols*rows*lays;
+
+    const pcs_per_layer = rows*cols;
+
+    console.log(`Cols: ${cols} (${max_x}/${w+1})`);
+    console.log(`Rows: ${rows} (${max_y}/${d+1})`);
+    console.log(`Lays: ${lays} (${max_z}/${h+1})`);
+    console.log("Total spots:",total_spots);
+
+    const [start_x, start_y, start_z] = [1.5,1.5,1.5];
+
 
     for(var i=0; i<number; i++) {
-        const offset_x = i*(w+1);
-        // if(offset_x+w > max_x)
-        //     offset_x
+        // const pcs_on_layer = number % layer*pcs_per_layer;
+        
+        // const spot = i%pcs_per_layer;
+        
+        const layer = Math.floor(i / pcs_per_layer);
+        // console.log(layer,'=',number,'/',pcs_per_layer);
+        const row = Math.floor((i/cols) % rows);
+        const col = i % cols;
+        console.log(i,`--> (layer ${col}, row ${row}, col ${col})`);
+
+        // const offset_z = (layer-1) * (h+1);
+
+        // const offset_x = 
+        const offset_z = layer * (h+1);
+        const offset_x = col * (w+1);
+        const offset_y = row * (d+1);
+        addCube(w,d,h,
+            offset_x+start_x,
+            offset_y+start_y,
+            offset_z+start_z);
+    }
+
+
+    return;
+
+    for(var i=0; i<number; i++) {
+
+        const offset_x = 
+
+        // const offset_x = i*(w+1);
+        offset_x += (w+1);
+        if(offset_x > max_x) {
+            offset_x = x;
+            offset_y += (d+1);
+        }
+        // const new_offset_x = offset+w > max_x ? 0 : offset_x = 0;
         console.log(i,offset_x);
-        addCube(w,d,h,offset_x,y,z);
+        addCube(w,d,h,offset_x,offset_y,z);
     }
 }
