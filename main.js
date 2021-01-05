@@ -160,9 +160,9 @@ function setup() {
 function add_crate() {
 
     const cubes = [
-        [116,76+1.5,1.5,    0,0,0,      'crate.jpg'],
-        [114.5,1.5,80,  1.5,0,1.5,  'crate.jpg'],
-        [1.5,76+1.5,80,   0,0,1.5,      'crate.jpg'],
+        [116+1.5,   76+1.5, 1.5,    0,0,0,      'crate.jpg'],
+        [116, 1.5,    80,      1.5,0,1.5,  'crate.jpg'],
+        [1.5,   76+1.5, 80,     0,0,1.5,    'crate.jpg'],
     ]
     
     for(const cubedata of cubes) {
@@ -201,7 +201,7 @@ function addCube(w,d,h, x,y,z, surface='clay_a.jpg', add=true, geometry=null, ma
 
     if(add) {
         objects.push(item);
-        console.log("Item added at",w,d,h,x,y,z);
+        // console.log("Item added at",w,d,h,x,y,z);
     }
 }
 
@@ -219,7 +219,7 @@ function addCubeMesh(w,d,h, x,y,z, geometry, material, add=true) {
 
     if(add) {
         objects.push(item);
-        console.log("Item added at",w,d,h,x,y,z);
+        // console.log("Item added at",w,d,h,x,y,z);
     }
 }
 
@@ -395,7 +395,7 @@ function parse_textarea() {
         // console.log(layer,'=',number,'/',pcs_per_layer);
         const row = Math.floor((i/cols) % rows);
         const col = i % cols;
-        console.log(i,`--> (layer ${col}, row ${row}, col ${col})`);
+        // console.log(i,`--> (layer ${col}, row ${row}, col ${col})`);
 
         // const offset_z = (layer-1) * (h+1);
 
