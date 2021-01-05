@@ -12,8 +12,43 @@
             <div>Floating div</div>
             <p class="divbutton" onclick="floatingClicked()">Add piece</p>
             <p class="divbutton" onclick="clear_objects()">Remove all</p>
+            <input type="text" placeholder="Margin" name="" id="object-margin" value="1" oninput="scheduleUpdate()">
             <textarea name="" id="" cols="30" rows="10" oninput="scheduleUpdate()"></textarea>
+            <p id="total-spots"></p>
         </div>
+
+        <script type="x-shader/x-vertex" id="vertexShader">
+
+			varying vec3 vWorldPosition;
+
+			void main() {
+
+				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+				vWorldPosition = worldPosition.xyz;
+
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentShader">
+
+			uniform vec3 topColor;
+			uniform vec3 bottomColor;
+			uniform float offset;
+			uniform float exponent;
+
+			varying vec3 vWorldPosition;
+
+			void main() {
+
+				float h = normalize( vWorldPosition + offset ).y;
+				gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
+
+			}
+
+		</script>
 
         <script src="three.js"></script>
         <script src="OrbitControls.js"></script>

@@ -44,6 +44,10 @@ function setup() {
     //controls.update() must be called after any manual changes to the camera's transform
     camera.position.set( 0, 80, 400 );
     controls.update();
+
+    
+    scene.background = new THREE.Color().setHSL( 0.6, 0, 1 );
+    scene.fog = new THREE.Fog( scene.background, 1, 5000 );
     
     /* Add box  */
     /*
@@ -54,25 +58,101 @@ function setup() {
     const cube = new THREE.Mesh( geometry, material );
     scene.add( cube );
     */
+   // LIGHTS
+
+    const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+    hemiLight.color.setHSL( 0.6, 1, 0.6 );
+    hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+    hemiLight.position.set( 0, 50, 0 );
+    scene.add( hemiLight );
+
+    const hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
+    scene.add( hemiLightHelper );
+
+    //
+
+    const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    dirLight.color.setHSL( 0.1, 1, 0.95 );
+    dirLight.position.set( - 1, 1.75, 1 );
+    dirLight.position.multiplyScalar( 30 );
+    scene.add( dirLight );
+
+    dirLight.castShadow = true;
+
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+
+    const d = 50;
+
+    dirLight.shadow.camera.left = - d;
+    dirLight.shadow.camera.right = d;
+    dirLight.shadow.camera.top = d;
+    dirLight.shadow.camera.bottom = - d;
+
+    dirLight.shadow.camera.far = 3500;
+    dirLight.shadow.bias = - 0.0001;
+
+    const dirLightHelper = new THREE.DirectionalLightHelper( dirLight, 10 );
+    scene.add( dirLightHelper );
+
+    // GROUND
+
+    const groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
+    const groundMat = new THREE.MeshLambertMaterial( { color: 0xffffff } );
+    groundMat.color.setHSL( 0.095, 1, 0.75 );
+
+    const ground = new THREE.Mesh( groundGeo, groundMat );
+    ground.position.y = - 33;
+    ground.rotation.x = - Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add( ground );
+
+    // SKYDOME
+
+    const vertexShader = document.getElementById( 'vertexShader' ).textContent;
+    const fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+    const uniforms = {
+        "topColor": { value: new THREE.Color( 0x0077ff ) },
+        "bottomColor": { value: new THREE.Color( 0xffffff ) },
+        "offset": { value: 33 },
+        "exponent": { value: 0.6 }
+    };
+    uniforms[ "topColor" ].value.copy( hemiLight.color );
+
+    scene.fog.color.copy( uniforms[ "bottomColor" ].value );
+
+    const skyGeo = new THREE.SphereBufferGeometry( 4000, 32, 15 );
+    const skyMat = new THREE.ShaderMaterial( {
+        uniforms: uniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        side: THREE.BackSide
+    } );
+
+    const sky = new THREE.Mesh( skyGeo, skyMat );
+    scene.add( sky );
    
-   
-   /* Add floor  */    
-   var geometry2 = new THREE.PlaneGeometry( 1000, 1000, 1, 1 );
-   var material2 = new THREE.MeshBasicMaterial( { color: 0xeeeeee } );
-   var floor = new THREE.Mesh( geometry2, material2 );
-   floor.material.side = THREE.DoubleSide;
-   scene.add( floor );
-   
-   // Camera default position and rotation
-   const [px,py,pz,rx,ry,rz] = [-70, -140, 140, 57, 2, -2];
-   camera.position.x = px;
-   camera.position.y = py;
-   camera.position.z = pz;
-   camera.rotation.x = rx;
-   camera.rotation.y = ry;
-   camera.rotation.z = rz;
-   
-   window.addEventListener("resize",onWindowResize);
+    /* Add floor  */    
+    var geometry2 = new THREE.PlaneGeometry( 1000, 1000, 1, 1 );
+    const texture = new THREE.TextureLoader().load('textures/seamless_sand.jpg');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set( 8, 8 );
+    var material2 = new THREE.MeshBasicMaterial( { map: texture } );
+    var floor = new THREE.Mesh( geometry2, material2 );
+    floor.material.side = THREE.DoubleSide;
+    scene.add( floor );
+
+    // Camera default position and rotation
+    const [px,py,pz,rx,ry,rz] = [-70, -140, 140, 57, 2, -2];
+    camera.position.x = px;
+    camera.position.y = py;
+    camera.position.z = pz;
+    camera.rotation.x = rx;
+    camera.rotation.y = ry;
+    camera.rotation.z = rz;
+
+    window.addEventListener("resize",onWindowResize);
 }
 
 
@@ -180,6 +260,10 @@ function update() {
 */
 function parse_textarea() {
     const text = document.querySelectorAll("textarea")[0].value;
+
+    if(text.length < 1)
+        return;
+
     console.log(text);
     const [number,size,rotation] = text.split(' ');
     let [w,d,h] = size.split('x').map(s => parseInt(s));
@@ -209,17 +293,19 @@ function parse_textarea() {
     const max_y = 76;
     const max_z = 80;
 
-    const cols = Math.floor(max_x/(w+1));
-    const rows = Math.floor(max_y/(d+1));
-    const lays = Math.floor(max_z/(h+1));
+    const margin = Math.abs(parseFloat(document.querySelector("#object-margin").value));
+
+    const cols = Math.floor(max_x/(w+margin));
+    const rows = Math.floor(max_y/(d+margin));
+    const lays = Math.floor(max_z/(h+margin));
 
     const total_spots = cols*rows*lays;
 
     const pcs_per_layer = rows*cols;
 
-    console.log(`Cols: ${cols} (${max_x}/${w+1})`);
-    console.log(`Rows: ${rows} (${max_y}/${d+1})`);
-    console.log(`Lays: ${lays} (${max_z}/${h+1})`);
+    console.log(`Cols: ${cols} (${max_x}/${w+margin})`);
+    console.log(`Rows: ${rows} (${max_y}/${d+margin})`);
+    console.log(`Lays: ${lays} (${max_z}/${h+margin})`);
     console.log("Total spots:",total_spots);
 
     const [start_x, start_y, start_z] = [1.5,1.5,1.5];
@@ -239,9 +325,9 @@ function parse_textarea() {
         // const offset_z = (layer-1) * (h+1);
 
         // const offset_x = 
-        const offset_z = layer * (h+1);
-        const offset_x = col * (w+1);
-        const offset_y = row * (d+1);
+        const offset_z = layer * (h+margin);
+        const offset_x = col * (w+margin);
+        const offset_y = row * (d+margin);
         addCube(w,d,h,
             offset_x+start_x,
             offset_y+start_y,
