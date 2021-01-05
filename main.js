@@ -58,7 +58,7 @@ function setup() {
     scene.add( cube );
     */
    // LIGHTS
-
+    /*
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
     hemiLight.color.setHSL( 0.6, 1, 0.6 );
     hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
@@ -93,7 +93,7 @@ function setup() {
 
     const dirLightHelper = new THREE.DirectionalLightHelper( dirLight, 10 );
     scene.add( dirLightHelper );
-
+    */
     // GROUND
 
     const groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
@@ -107,7 +107,7 @@ function setup() {
     scene.add( ground );
 
     // SKYDOME
-
+    /*
     const vertexShader = document.getElementById( 'vertexShader' ).textContent;
     const fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
     const uniforms = {
@@ -130,7 +130,7 @@ function setup() {
 
     const sky = new THREE.Mesh( skyGeo, skyMat );
     scene.add( sky );
-   
+   */
     /* Add floor  */    
     var geometry2 = new THREE.PlaneGeometry( 1000, 1000, 1, 1 );
     const texture = new THREE.TextureLoader().load('textures/seamless_sand.jpg');
@@ -161,8 +161,8 @@ function add_crate() {
 
     const cubes = [
         [116,76,1.5,    0,0,0,      'crate.jpg'],
-        [114.5,1.5,75,  1.5,0,1.5,  'crate.jpg'],
-        [1.5,76,75,   0,0,1.5,      'crate.jpg'],
+        [114.5,1.5,80,  1.5,0,1.5,  'crate.jpg'],
+        [1.5,76,80,   0,0,1.5,      'crate.jpg'],
     ]
     
     for(const cubedata of cubes) {
@@ -354,6 +354,8 @@ function parse_textarea() {
             [w,d,h] = [h,w,d]; break;
         case 'r5':
             [w,d,h] = [h,d,w]; break;
+        case 'r6':
+            [w,d,h] = [d,h,w]; break;
 
         default:
             break;
