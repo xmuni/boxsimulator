@@ -160,9 +160,9 @@ function setup() {
 function add_crate() {
 
     const cubes = [
-        [116,76,1.5,    0,0,0,      'crate.jpg'],
+        [116,76+1.5,1.5,    0,0,0,      'crate.jpg'],
         [114.5,1.5,80,  1.5,0,1.5,  'crate.jpg'],
-        [1.5,76,80,   0,0,1.5,      'crate.jpg'],
+        [1.5,76+1.5,80,   0,0,1.5,      'crate.jpg'],
     ]
     
     for(const cubedata of cubes) {
