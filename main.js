@@ -299,12 +299,17 @@ function update_total_spots(w,d,h, x,y,z, margin=1) {
         const rows = Math.floor(y/(d2+margin));
         const lays = Math.floor(z/(h2+margin));
         console.log(rotation,cols,rows,lays);
-        total_spots[rotation] = cols*rows*lays;
+        total_spots[rotation] = {
+            rows: rows,
+            cols: cols,
+            lays: lays,
+            total: cols*rows*lays,
+        };
     }
 
     const text_rows = [];
     for (const [key, value] of Object.entries(total_spots)) {
-        text_rows.push(`${key}: ${value} pcs`);
+        text_rows.push(`${key}: ${value.total} pcs (${value.cols} x ${value.rows} = ${value.rows*value.cols}; su ${value.lays} livelli)`);
     }
 
     document.querySelector("#total-spots").innerText = text_rows.join('\n');
