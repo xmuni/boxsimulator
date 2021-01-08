@@ -4,6 +4,9 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
+const [box_x, box_y, box_z] = document.querySelector("#box-size").value.split("x").map(n => parseFloat(n));
+const box = {x: box_x, y: box_y, z: box_z};
+
 
 // const controls = new THREE.OrbitControls();
 const controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -98,9 +101,9 @@ function add_crate() {
 
     const cubes = [
         // X        Y           Z       start       texture
-        [116+1.5,   76+1.5,     1.5,    0,0,0,      'crate.jpg'],
-        [116,       1.5,80,     1.5,    0,1.5,      'crate.jpg'],
-        [1.5,       76+1.5,     80,     0,0,1.5,    'crate.jpg'],
+        [box.x+1.5,   box.y+1.5,     1.5,    0,0,0,      'crate.jpg'],
+        [box.x,       1.5,box.z,     1.5,    0,1.5,      'crate.jpg'],
+        [1.5,       box.y+1.5,     box.z,     0,0,1.5,    'crate.jpg'],
     ]
     
     for(const cubedata of cubes) {
@@ -364,9 +367,13 @@ function parse_textarea() {
     if(typeof(rotation) === undefined)
         rotation= 'r3';
 
-    const max_x = 116;
-    const max_y = 76;
-    const max_z = 80;
+    const max_x = box.x;
+    const max_y = box.y;
+    const max_z = box.z;
+
+    console.log(typeof(box_x),box_x);
+    console.log(typeof(box_y),box_y);
+    console.log(typeof(box_z),box_z);
 
     const margin = Math.abs(parseFloat(document.querySelector("#object-margin").value));
 
