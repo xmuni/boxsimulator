@@ -9,6 +9,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 const controls = new THREE.OrbitControls( camera, renderer.domElement );
 
 
+let box_objects = [];
 let objects = [];
 let virtual_objects = [];
 let cube_index = 0;
@@ -249,10 +250,12 @@ function display_info({
         `Substrato extra: ${extra.cols}x${extra.rows}`,
         `Pz per strato: ${layer_pcs} (${base.cols*base.rows} base + ${extra.cols*extra.rows} extra)`,        
         `Strati: ${layers} (${full_layers} strati interi + ${partial_layers} parziale da ${number-(full_layers*layer_pcs)} pz)`,
-        `Altezza di ciascuno strato: ${layers*z1} cm`,
-        `Altezza dei ${full_layers} strati interi: ${(layers-1)*z1} cm`,
-        `Casse piene: ${full_crates}`,
-        `Altezza di ciascuna cassa intera: ${full_crates>0 ? (full_crate_height/full_crates) : "ZERO (nessuna cassa intera)"}`
+        `\nAltezza di ciascuno strato: ${layers*z1} cm`,
+        `Altezza dei ${full_layers} strati interi: ${full_layers*z1} cm`,
+        `Altezza dei ${full_layers} strati interi + ${partial_layers} parziale : ${(layers)*z1} cm`,
+        // `Casse piene: ${full_crates} alte ${(full_layers*z1)/full_crates} cm (${layer_pcs*Math.round(full_layers/full_crates)} pz/cassa)`,
+        `Altezza di ciascuna cassa intera: ${full_crates>0 ? (full_crate_height/full_crates) : "ZERO (nessuna cassa intera)"}`,
+        `\nPer riempire ${layers} strati servono ${(full_layers+partial_layers)*layer_pcs} pezzi (${(full_layers+partial_layers)*layer_pcs-number} extra)`,
     ];
 
     let text = text_rows.join('\n');

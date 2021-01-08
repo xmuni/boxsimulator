@@ -12,12 +12,15 @@
             <!-- <div>Floating div</div> -->
             <!-- <p class="divbutton" onclick="floatingClicked()">Add piece</p> -->
 			<p class="divbutton" onclick="clear_objects()">Remove all</p>
-			
+
+			<label for="">Box size:</label>
+			<input type="text" placeholder="Box size" name="" id="box-size" value="116x76x85" oninput="update_crate()">
+
 			<label for="">Margins:</label>
 			<input type="text" placeholder="Margin" name="" id="object-margin" value="0.2" oninput="scheduleUpdate()">
 			
 			<label for="Items:"></label>
-            <textarea name="" id="" cols="30" rows="10" oninput="scheduleUpdate()"></textarea>
+            <textarea name="" id="" cols="10" rows="10" oninput="scheduleUpdate()"></textarea>
             <p id="total-spots"></p>
         </div>
 
