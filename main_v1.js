@@ -1,3 +1,5 @@
+// import { OrbitControls } from './jsm/controls/OrbitControls.js';
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
@@ -144,6 +146,7 @@ function setup() {
 
     // Camera default position and rotation
     const [px,py,pz,rx,ry,rz] = [-70, -140, 140, 57, 2, -2];
+    camera.up.set(0,0,1);
     camera.position.x = px;
     camera.position.y = py;
     camera.position.z = pz;
@@ -282,18 +285,8 @@ function update_total_spots(w,d,h, x,y,z, margin=1) {
 
     for(const rotation of ['r1','r2','r3','r4','r5','r6']) {
         console.log("Rotation:",rotation);
-        var [w2,d2,h2] = [w,d,h];
-
-        if(rotation == 'r2')
-            [w2,d2,h2] = [d,w,h];
-        else if(rotation == 'r3')
-            [w2,d2,h2] = [w,h,d];
-        else if(rotation == 'r4')
-            [w2,d2,h2] = [h,w,d];
-        else if(rotation == 'r5')
-            [w2,d2,h2] = [h,d,w];
-        else if(rotation == 'r6')
-            [w2,d2,h2] = [d,h,w];
+        
+        let [w2,d2,h2] = rotate([w,d,h],rotation);
         
         const cols = Math.floor(x/(w2+margin));
         const rows = Math.floor(y/(d2+margin));
@@ -318,7 +311,39 @@ function update_total_spots(w,d,h, x,y,z, margin=1) {
 }
 
 
+function rotate(dimensions,rotation) {
 
+    const [w,d,h] = dimensions;
+    
+    switch(rotation) {
+        case 'r2':
+            return [d,w,h];
+        case 'r3':
+            return [w,h,d];
+        case 'r4':
+            return [h,w,d];
+        case 'r5':
+            return [h,d,w];
+        case 'r6':
+            return [d,h,w];
+        default:
+            return [w,d,h];
+    }
+}
+
+
+
+function fit_axis(size_piece, size_container, margin) {
+    return Math.floor(size_container / (size_piece+margin) - margin);
+}
+
+function calculate_basic_layer(piece_x, piece_y, container_x, container_y, margin) {
+    return {
+        rows: fit_axis(piece_y, container_y, margin),
+        cols: fit_axis(piece_x, container_x, margin),
+
+    }
+}
 
 
 /* Format:
@@ -332,8 +357,6 @@ function parse_textarea() {
 
     console.log(text);
     const [number,size,rotation] = text.split(' ');
-    let [w,d,h] = size.split('x').map(s => parseInt(s));
-    console.log(number,w,d,h,rotation);
 
     const max_x = 116;
     const max_y = 76;
@@ -341,33 +364,19 @@ function parse_textarea() {
 
     const margin = Math.abs(parseFloat(document.querySelector("#object-margin").value));
 
+    let [w,d,h] = size.split('x').map(s => parseInt(s));
+    [w,d,h] = rotate([w,d,h],rotation);
+    
+    console.log(number,w,d,h,rotation);
     console.log(update_total_spots(w,d,h,max_x,max_y,max_z, margin));
-
-    const [x,y,z] = [3,3,3];
-
-    switch(rotation) {
-        case 'r2':
-            [w,d,h] = [d,w,h]; break;
-        case 'r3':
-            [w,d,h] = [w,h,d]; break;
-        case 'r4':
-            [w,d,h] = [h,w,d]; break;
-        case 'r5':
-            [w,d,h] = [h,d,w]; break;
-        case 'r6':
-            [w,d,h] = [d,h,w]; break;
-
-        default:
-            break;
-    }
-
     console.log("Width: ",w);
     console.log("Depth: ",d);
     console.log("Height:",h);
 
-    const cols = Math.floor(max_x/(w+margin));
-    const rows = Math.floor(max_y/(d+margin));
-    const lays = Math.floor(max_z/(h+margin));
+    // const cols = Math.floor(max_x/(w+margin) - margin);
+    const cols = fit_axis(w, max_x, margin);
+    const rows = fit_axis(d, max_y, margin);
+    const lays = fit_axis(h, max_z, margin);
 
     const total_spots = cols*rows*lays;
 
@@ -386,6 +395,7 @@ function parse_textarea() {
     console.log(texture);
     const material = new THREE.MeshBasicMaterial( { map: texture });
 
+    
     for(var i=0; i<number; i++) {
         // const pcs_on_layer = number % layer*pcs_per_layer;
         
@@ -411,8 +421,21 @@ function parse_textarea() {
     }
 
 
-    return;
+    const residual_x = parseFloat(( max_x - (w+margin)*cols ).toPrecision(2));
+    const residual_y = parseFloat(( max_y - (d+margin)*rows ).toPrecision(2));
 
+    const residual_a = [residual_x,max_y];
+    const residual_b = [max_x,residual_y];
+
+    
+    // const residual_z = ( max_z - (h+margin)*lays ).toPrecision(2);
+    
+    console.log("Residual XYZ:",[residual_x,residual_y]);
+    // console.log("Residual X:",`${max_x} - (${w}+${margin})*${cols}`);
+    console.log("Residual areas:",residual_a,residual_b);
+
+
+    /*
     for(var i=0; i<number; i++) {
 
         const offset_x = 
@@ -427,4 +450,5 @@ function parse_textarea() {
         console.log(i,offset_x);
         addCube(w,d,h,offset_x,offset_y,z);
     }
+    */
 }
