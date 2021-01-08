@@ -253,12 +253,20 @@ function display_info({
         `Substrato extra: ${extra.cols}x${extra.rows}`,
         `Pz per strato: ${layer_pcs} (${base.cols*base.rows} base + ${extra.cols*extra.rows} extra)`,        
         `Strati: ${layers} (${full_layers} strati interi + ${partial_layers} parziale da ${number-(full_layers*layer_pcs)} pz)`,
+        
         `\nAltezza di ciascuno strato: ${layers*z1} cm`,
         `Altezza dei ${full_layers} strati interi: ${full_layers*z1} cm`,
         `Altezza dei ${full_layers} strati interi + ${partial_layers} parziale : ${(layers)*z1} cm`,
         // `Casse piene: ${full_crates} alte ${(full_layers*z1)/full_crates} cm (${layer_pcs*Math.round(full_layers/full_crates)} pz/cassa)`,
         `Altezza di ciascuna cassa intera: ${full_crates>0 ? (full_crate_height/full_crates) : "ZERO (nessuna cassa intera)"}`,
+        
+        `\nPer riempire ${full_layers} strati servono ${(full_layers)*layer_pcs} pezzi (${(full_layers)*layer_pcs-number} extra)`,
+        `(Pz per strato: ${layer_pcs} (${base.cols*base.rows} base + ${extra.cols*extra.rows} extra))`,
+        `${full_layers} strati = altezza complessiva ${full_layers*z1} cm`,
+
         `\nPer riempire ${layers} strati servono ${(full_layers+partial_layers)*layer_pcs} pezzi (${(full_layers+partial_layers)*layer_pcs-number} extra)`,
+        `(Pz per strato: ${layer_pcs} (${base.cols*base.rows} base + ${extra.cols*extra.rows} extra))`,
+        `${layers} strati = altezza complessiva ${layers*z1} cm`,
     ];
 
     let text = text_rows.join('\n');
